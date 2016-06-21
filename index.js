@@ -7,8 +7,8 @@ var request = require('request');
 var cryptoJS = require("crypto-js");
 
 var Ivencloud = function () {
-    this.apiKey = "";
-    this.frequency = 0;
+    // this._apiKey = "";
+    // this._frequency = 0;
     // console.log('hi');
 }
 var ApiKey = "";
@@ -121,10 +121,12 @@ Ivencloud.prototype.sendData = function (data, callback) {
     }
 }
 
-Ivencloud.prototype.senDataWithLoop = function (data, callback) {
-    if (this.frequency > 0) {
-        setTimeout(this.sendData(data, callback), this.frequency)
-    }
+Ivencloud.prototype.senDataWithLoop = function (data, freq, callback) {
+    var self = this;
+    setInterval(function() {
+        self.sendData(data,callback);
+    }, freq*1000);
+
 }
 
 module.exports = new Ivencloud();
