@@ -19,7 +19,7 @@ Ivencloud.prototype.activate = function(deviceId, secretKey, callback){
         return 0;
     if (typeof deviceId !== 'string' | typeof secretKey !== 'string')
         return callback(0);
-    if (deviceId !== '' | secretKey !== '')
+    if (deviceId === '' | secretKey === '')
         return callback(0);
     
     var activationCode = cryptoJS.HmacSHA1(deviceId, secretKey);
@@ -54,15 +54,15 @@ Ivencloud.prototype.activate = function(deviceId, secretKey, callback){
 
                     callback(res);
                 } else { // content-type is no json
-                    console.log("no json");
+                    // console.log("no json");
                     return callback(0);
                 }
             } else { // responseCode > 500
-                console.log(response.statusCode);
+                // console.log(response.statusCode);
                 return callback(0);
             }
         } else { // error on request
-            console.log(error);
+            // console.log(error);
             return callback(0);
         }
     });
@@ -122,15 +122,16 @@ Ivencloud.prototype.sendData = function (data, callback) {
                         console.log("content=type is not json");
                     }
                 } else { // statusCode > 500
-                    console.log(response.statusCode);
+                    // console.log(response.statusCode);
                     return callback(0);
                 }
             } else { // error on request
-                console.log(response.statusCode);
+                // console.log(response.statusCode);
+                return callback(0);
             }
         });
     } else {
-        console.log('api key is null');
+        // console.log('api key is null');
         callback(0);
     }
 }

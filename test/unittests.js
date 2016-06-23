@@ -98,3 +98,17 @@ describe('sendDataWithLoop function parameters : freq', function () {
         });
     });
 });
+
+describe('basic connection', function () {
+    it('this should work', function () {
+        ivencloud.activate("device id", "secret key", function (response) {
+            expect(typeof response).to.equal('object');
+        });
+    });
+
+    it('no api key', function () {
+        ivencloud.sendData({n:0}, function (response) {
+            expect(response).to.equal(0);
+        });
+    });
+});
