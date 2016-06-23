@@ -1,17 +1,21 @@
 {
   "name": "ivencloud",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "connect your device to iven cloud",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/BerkOzdilek/nodejsSDK.git"
   },
   "keywords": [
-    "iot", "iven", "internet of things", "connected devices", "cloud"
+    "iot",
+    "iven",
+    "internet of things",
+    "connected devices",
+    "cloud"
   ],
   "author": "Berk Ozdilek",
   "license": "ISC",
@@ -23,5 +27,9 @@
   "dependencies": {
     "request": "~2.72.0",
     "crypto-js": "~3.1.6"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^2.5.3"
   }
 }
