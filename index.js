@@ -1,5 +1,9 @@
 /**
  * Created by berkozdilek on 15/06/16.
+ *
+ * ivencloud is a nodejs package for connecting devices to Iven Cloud.
+ * Checkout the examples folder to see examples.
+ * Further examples and guides can be found in iven blog : http://blog.iven.io
  */
 
 // third party dependencies
@@ -7,12 +11,18 @@ var request = require('request');
 var cryptoJS = require("crypto-js");
 
 var Ivencloud = function () {
-    // this._apiKey = "";
-    // this._frequency = 0;
-    // console.log('hi');
+
 }
 var ApiKey = "";
 
+/**
+ * Activate device. Device must be activated to be able to send data
+ *
+ * @param {String} deviceId
+ * @param {String} secretKey
+ * @param callback
+ * @returns {*}
+ */
 Ivencloud.prototype.activate = function(deviceId, secretKey, callback){
 
     if (callback === null | typeof callback !== 'function')
@@ -68,11 +78,24 @@ Ivencloud.prototype.activate = function(deviceId, secretKey, callback){
     });
 }
 
+/**
+ * Checks the object if its empty
+ *
+ * @param obj
+ * @returns {boolean} true if empty
+ */
 function isEmpty(obj){
     for (var prop in obj) if (obj.hasOwnProperty(prop)) return false;
     return true;
 }
 
+/**
+ * Sends data to Iven Cloud.
+ *
+ * @param data
+ * @param callback
+ * @returns {*}
+ */
 Ivencloud.prototype.sendData = function (data, callback) {
 
     if (callback === null | typeof callback !== 'function')
@@ -136,6 +159,13 @@ Ivencloud.prototype.sendData = function (data, callback) {
     }
 }
 
+/**
+ * Sends data every given seconds
+ *
+ * @param data
+ * @param freq as seconds
+ * @param callback
+ */
 Ivencloud.prototype.senDataWithLoop = function (data, freq, callback) {
 
     if (freq <= 0)
@@ -148,4 +178,8 @@ Ivencloud.prototype.senDataWithLoop = function (data, freq, callback) {
 
 }
 
+/**
+ *
+ * @type {Ivencloud}
+ */
 module.exports = new Ivencloud();
