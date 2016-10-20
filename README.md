@@ -1,3 +1,4 @@
-# nodejsSDK
-# we are on BETA
-# Coming soon
+# Install
+npm install ivencloud
+
+# Examples can be found in example folder
