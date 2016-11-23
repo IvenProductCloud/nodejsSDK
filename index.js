@@ -12,7 +12,7 @@ var cryptoJS = require("crypto-js");
 
 var Ivencloud = function () {
 
-}
+};
 var ApiKey = "";
 
 /**
@@ -26,11 +26,11 @@ var ApiKey = "";
 Ivencloud.prototype.activate = function(deviceId, secretKey, callback){
 
     if (callback === null | typeof callback !== 'function')
-        return 0;
+        return new Error('The third parameter must be valid callback function, please try again!');
     if (typeof deviceId !== 'string' | typeof secretKey !== 'string')
-        return callback(0);
+        return callback(new Error('Device ID or Secret Key might not be a valid String, please try again!'));
     if (deviceId === '' | secretKey === '')
-        return callback(0);
+        return callback(new Error('Device ID or Secret Key might be empty, please try again!'));
     
     var activationCode = cryptoJS.HmacSHA1(deviceId, secretKey);
     var options = {
@@ -63,20 +63,20 @@ Ivencloud.prototype.activate = function(deviceId, secretKey, callback){
                         res.description = info.description;
 
                     callback(res);
-                } else { // content-type is no json
+                } else { // content-type is not json
                     // console.log("no json");
-                    return callback(0);
+                    return callback(new Error('The Content-Type is not json, please check again!'));
                 }
             } else { // responseCode > 500
                 // console.log(response.statusCode);
-                return callback(0);
+                return callback(new Error('The status code was >500, please check again!'));
             }
         } else { // error on request
             // console.log(error);
-            return callback(0);
+            return callback(new Error('The server was not responding with a status code of '+response.statusCode+'. Please check again!'));
         }
     });
-}
+};
 
 /**
  * Checks the object if its empty
@@ -99,11 +99,11 @@ function isEmpty(obj){
 Ivencloud.prototype.sendData = function (data, callback) {
 
     if (callback === null | typeof callback !== 'function')
-        return 0;
+        return new Error('The second parameter must be valid callback function, please try again!');
     if (typeof data !== 'object')
-        return callback(0)
+        return callback(new Error('The Api Key provided is not a valid javascript object, please try again!'));
     if (isEmpty(data))
-       return callback(0)
+       return callback(new Error('The Api Key provided is empty, please try again!'));
     
     
     if (data | data !== "null" && data !== "undefined")
@@ -142,22 +142,23 @@ Ivencloud.prototype.sendData = function (data, callback) {
                         // call callback and return response object
                         callback(res);
                     } else { // content-type is not json
-                        console.log("content=type is not json");
+                        return callback(new Error('The Content-Type is not json, please check again!'));
                     }
                 } else { // statusCode > 500
                     // console.log(response.statusCode);
-                    return callback(0);
+                  return callback(new Error('The status code was >500, please check again!'));
                 }
             } else { // error on request
                 // console.log(response.statusCode);
-                return callback(0);
+                return callback(new Error('The server was not responding with a status code of '+response.statusCode+'. Please check again!'));
             }
         });
     } else {
         // console.log('api key is null');
-        callback(0);
+        return callback(new Error('The Api Key provided is null, please try again!'));
+       
     }
-}
+};
 
 /**
  * Sends data every given seconds
@@ -169,14 +170,14 @@ Ivencloud.prototype.sendData = function (data, callback) {
 Ivencloud.prototype.senDataWithLoop = function (data, freq, callback) {
 
     if (freq <= 0)
-        callback(0);
+        return callback(new Error('The second parameter must be greater than 0, please try again!'));
     
     var self = this;
     setInterval(function() {
         self.sendData(data,callback);
     }, freq*1000);
 
-}
+};
 
 /**
  *
