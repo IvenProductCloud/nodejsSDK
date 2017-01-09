@@ -10,10 +10,31 @@
 var request = require('request');
 var cryptoJS = require("crypto-js");
 
-var Ivencloud = function () {
-
+const State = {
+    NONE:         0,
+    INITILIAZED:  1,
+    ACTIVATED:    2,
+    print: function (s) {
+        switch (s) {
+            case 0: return "NONE";
+            case 1: return "INITILIAZED";
+            case 2: return "ACTIVATED";
+        }}};
+var Ivencloud = function() {
+  this.uid = "";
+  this.secretkey = "";
+  this.activationCode = "";
+  this.state = State.NONE;
+  this.apiKey = "";
 };
 var ApiKey = "";
+
+
+Ivencloud.prototype.setCredentials = function(deviceUid, secretKey) {
+    this.uid = deviceUid;
+    this.secretKey = secretKey;
+    this.activationCode = cryptoJS.HmacSHA1(deviceId, secretKey);
+};
 
 /**
  * Activate device. Device must be activated to be able to send data
@@ -31,7 +52,7 @@ Ivencloud.prototype.activate = function(deviceId, secretKey, callback){
         return callback(new Error('Device ID or Secret Key might not be a valid String, please try again!'));
     if (deviceId === '' | secretKey === '')
         return callback(new Error('Device ID or Secret Key might be empty, please try again!'));
-    
+
     var activationCode = cryptoJS.HmacSHA1(deviceId, secretKey);
     var options = {
         url: 'http://demo.iven.io/activate/device',
@@ -104,8 +125,8 @@ Ivencloud.prototype.sendData = function (data, callback) {
         return callback(new Error('The Api Key provided is not a valid javascript object, please try again!'));
     if (isEmpty(data))
        return callback(new Error('The Api Key provided is empty, please try again!'));
-    
-    
+
+
     if (data | data !== "null" && data !== "undefined")
     if (ApiKey != "") {
 
@@ -156,7 +177,7 @@ Ivencloud.prototype.sendData = function (data, callback) {
     } else {
         // console.log('api key is null');
         return callback(new Error('The Api Key provided is null, please try again!'));
-       
+
     }
 };
 
@@ -171,7 +192,7 @@ Ivencloud.prototype.senDataWithLoop = function (data, freq, callback) {
 
     if (freq <= 0)
         return callback(new Error('The second parameter must be greater than 0, please try again!'));
-    
+
     var self = this;
     setInterval(function() {
         self.sendData(data,callback);
