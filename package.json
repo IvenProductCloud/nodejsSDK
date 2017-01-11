@@ -30,9 +30,13 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "jsdoc": "^3.4.3",
     "mocha": "^2.5.3"
   },
-  "licenses": [{ "type": "MIT"
-  , "url": "http://www.opensource.org/licenses/mit-license.php"
-  }]
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://www.opensource.org/licenses/mit-license.php"
+    }
+  ]
 }
