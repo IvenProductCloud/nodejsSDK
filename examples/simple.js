@@ -15,16 +15,12 @@ var data = {
 	key2: "string"
 };
 
-// activate
-ivencloud.activate(di, sk, function (response) {
-    console.log(response);
+ivencloud.setCredentials({deviceUid:di,
+                    			secretKey:sk});
 
-    // send data
-    ivencloud.sendData(data, function (response) {
-        console.log(response);
-    });
+ivencloud.sendData(data, function(err, res) {
+	if (err)
+		console.log(err);
+	else
+		console.log(res));
 });
-
-
-
-
