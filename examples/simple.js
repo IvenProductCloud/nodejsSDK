@@ -24,3 +24,13 @@ ivencloud.sendData(data, function(err, res) {
 	else
 		console.log(res));
 });
+
+ivencloud.getTasks(function(err, res) {
+	if (err)
+		console.log(err);
+	else {
+			console.log(res));
+			ivencloud.taskDone(res.taskCode);
+	}
+
+});

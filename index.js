@@ -61,13 +61,13 @@ Ivencloud.prototype.sendData = function(options, data, callback) {
     if (this.State != State.ACTIVATED) {
       this.activate(function(err, res) {
         if (!err) {
-          sendDataRequest.call(this,this.hostname, this.apiKey, data, true, callback);
+          sendDataRequest.call(this,this.hostname, this.apiKey, data, true, 0, callback);
         } else {
           callback(err, res);
         }
       }.bind(this));
     } else {
-    sendDataRequest.call(this,this.hostname, this.apiKey, data, true, callback);
+    sendDataRequest.call(this,this.hostname, this.apiKey, data, true, 0, callback);
     }
 };
 
@@ -114,23 +114,44 @@ request(reqOpt, function (error, response, body) {
 
 };
 
-var generateActURL = function (url) {
-  return "http://"+ url +"/activate/device";
-};
-var generateSendDtURL = function (url) {
-  return "http://"+ url +"/data";
+Ivencloud.prototype.getTasks = function(callback) {
+  this.sendData({FEED:"T"}, function(err, res) {
+      if (err) {
+        callback(err, res);
+      }
+      else {
+        callback(null, {taskCode:res.task, taskValue:res.value});
+      }
+  });
 };
 
-var sendDataRequest = function (host, apiKey, body, renewApikey, callback) {
+Ivencloud.prototype.taskDone = function(taskCode, callback) {
+  this.sendData({FEED:"TD"}, function(err, res) {
+      if (err) {
+        callback(err, res);
+      }
+      else {
+        callback(null,{taskCode:res.task, taskValue:res.value});
+      }
+  });
+};
+
+var sendDataRequest = function (host, apiKey, body, renewApikey, task, callback) {
   var reqOpt = {
       method: 'POST',
       url: generateSendDtURL(host),
       headers: {
           'Content-Type' : 'application/json',
           'API-KEY': apiKey
-      },
-      body: JSON.stringify({data:[body]})
+      }
+      // ,body: JSON.stringify({data:[body]})
   };
+  if (task){
+    reqOpt.body = JSON.stringify({data:[body], iven_code:task});
+  } else {
+    reqOpt.body = JSON.stringify({data:[body]});
+  }
+
 
   request(reqOpt, function (error, response, body) {
     if (!error) {
@@ -140,7 +161,7 @@ var sendDataRequest = function (host, apiKey, body, renewApikey, callback) {
               var ivenCode = info.ivenCode;
               if (ivenCode == 1004 && renewApikey) {
                 this.activate(function(){
-                  return sendDataRequest.call(this,host, apiKey, body, false, cb);
+                  return sendDataRequest.call(this,host, apiKey, body, false, task, cb);
                 });
               } else if (ivenCode == 1001) {
                 callback(new Error(ivenCode.description), info);
@@ -155,6 +176,13 @@ var sendDataRequest = function (host, apiKey, body, renewApikey, callback) {
         return callback(new Error('Error making request: '+ error));
     }
   }.bind(this));
+};
+
+var generateActURL = function (url) {
+  return "http://"+ url +"/activate/device";
+};
+var generateSendDtURL = function (url) {
+  return "http://"+ url +"/data";
 };
 
 /**
