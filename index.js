@@ -23,7 +23,7 @@ const State = {
 
 var Ivencloud = function() {
   this.uid = "";
-  this.secretkey = "";
+  this.secretKey = "";
   this.activationCode = "";
   this.state = State.NONE;
   this.apiKey = "";
@@ -54,20 +54,24 @@ Ivencloud.prototype.sendData = function(options, data, callback) {
     data = options;
     options = null;
   }
+  var task = 0;
     if (options) {
       this.setCredentials(options);
+      if (options.task)
+        task = options.task;
     }
+
 
     if (this.State != State.ACTIVATED) {
       this.activate(function(err, res) {
         if (!err) {
-          sendDataRequest.call(this,this.hostname, this.apiKey, data, true, 0, callback);
+          sendDataRequest.call(this,this.hostname, this.apiKey, data, true, task, callback);
         } else {
           callback(err, res);
         }
       }.bind(this));
     } else {
-    sendDataRequest.call(this,this.hostname, this.apiKey, data, true, 0, callback);
+    sendDataRequest.call(this,this.hostname, this.apiKey, data, true, task, callback);
     }
 };
 
@@ -120,18 +124,27 @@ Ivencloud.prototype.getTasks = function(callback) {
         callback(err, res);
       }
       else {
-        callback(null, {taskCode:res.task, taskValue:res.value});
+        var ret = {taskCode:0, taskValue:""};
+        if (res.ivenCode >= 2000) {
+          ret.taskCode = res.ivenCode;
+          if (res.hasOwnProperty('task'))
+            ret.taskValue = res.task;
+        }
+        callback(null, ret);
       }
   });
 };
 
 Ivencloud.prototype.taskDone = function(taskCode, callback) {
-  this.sendData({FEED:"TD"}, function(err, res) {
+  if (callback == null) {
+    callback = function(){};
+  }
+  this.sendData({task:taskCode}, {FEED:"TD"}, function(err, res) {
       if (err) {
         callback(err, res);
       }
       else {
-        callback(null,{taskCode:res.task, taskValue:res.value});
+        callback(null,{status:res.status});
       }
   });
 };
