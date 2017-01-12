@@ -29,8 +29,8 @@ ivencloud.sendData(data, function(err, res) {
         * [.setCredentials([creds])](#Ivencloud+setCredentials)
         * [.sendData([options], data, callback)](#Ivencloud+sendData)
         * [.activate([options], callback)](#Ivencloud+activate)
-        * [.getTasks(callback)](#Ivencloud+getTasks)
-        * [.taskDone(taskCode, callback)](#Ivencloud+taskDone)
+        * [.getTasks([options], callback)](#Ivencloud+getTasks)
+        * [.taskDone([options], taskCode, callback)](#Ivencloud+taskDone)
     * _inner_
         * [~TasksCallback](#Ivencloud..TasksCallback) : <code>function</code>
         * [~TasksDoneCallback](#Ivencloud..TasksDoneCallback) : <code>function</code>
@@ -87,18 +87,20 @@ Activates the device and sets the api key.
 
 <a name="Ivencloud+getTasks"></a>
 
-### ivencloud.getTasks(callback)
+### ivencloud.getTasks([options], callback)
 Gets the tasks assigned to device if any
 
 **Kind**: instance method of <code>[Ivencloud](#Ivencloud)</code>
 
 | Param | Type | Description |
 | --- | --- | --- |
+| [options] | <code>Object</code> | The credentials to be set |
+| [options.apiKey] | <code>string</code> | API-KEY of the device |
 | callback | <code>[TasksCallback](#Ivencloud..TasksCallback)</code> | Asych. called after |
 
 <a name="Ivencloud+taskDone"></a>
 
-### ivencloud.taskDone(taskCode, callback)
+### ivencloud.taskDone([options], taskCode, callback)
 Sets the task to completed on Iven Cloud. Call this after you handle the related task
 assigned to device
 
@@ -106,6 +108,8 @@ assigned to device
 
 | Param | Type | Description |
 | --- | --- | --- |
+| [options] | <code>Object</code> | The credentials to be set |
+| [options.apiKey] | <code>string</code> | API-KEY of the device |
 | taskCode | <code>number</code> | Code of the completed task |
 | callback | <code>[TasksDoneCallback](#Ivencloud..TasksDoneCallback)</code> | Asych. called after |
 

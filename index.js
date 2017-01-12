@@ -161,11 +161,20 @@ Ivencloud.prototype.activate = function(options, callback) {
 
 /**
  * Gets the tasks assigned to device if any
+ * @param {Object} [options] - The credentials to be set
+ * @param {string} [options.apiKey] - API-KEY of the device
  * @param {Ivencloud~TasksCallback} callback - Asych. called after
  * @memberof Ivencloud
  */
-Ivencloud.prototype.getTasks = function(callback) {
-    this.sendData({FEED:"T"}, function(err, res) {
+Ivencloud.prototype.getTasks = function(options, callback) {
+    if (callback == null && typeof options == 'function') {
+        callback = options;
+        options = null;
+    }
+    if (options)
+        this.setCredentials(options);
+
+        this.sendData({FEED:"T"}, function(err, res) {
         if (err) {
             callback(err, res);
         }
@@ -193,14 +202,25 @@ Ivencloud.prototype.getTasks = function(callback) {
  * Sets the task to completed on Iven Cloud. Call this after you handle the related task
  * assigned to device
  *
+ * @param {Object} [options] - The credentials to be set
+ * @param {string} [options.apiKey] - API-KEY of the device
  * @param {number} taskCode - Code of the completed task
  * @param {Ivencloud~TasksDoneCallback} callback - Asych. called after
  * @memberof Ivencloud
  */
-Ivencloud.prototype.taskDone = function(taskCode, callback) {
-    if (callback == null) {
+Ivencloud.prototype.taskDone = function(options, taskCode, callback) {
+    if (typeof options == 'number') {
+        taskCode = options;
+        options = null;
         callback = function(){};
+    } else if (typeof taskCode == 'callback') {
+        callback = taskCode;
+        taskCode = options;
+        options = null;
     }
+    if (options)
+        this.setCredentials(options);
+
     this.sendData({task:taskCode}, {FEED:"TD"}, function(err, res) {
         if (err) {
             callback(err, res);
