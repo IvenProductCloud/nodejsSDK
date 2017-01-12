@@ -1,10 +1,30 @@
 <a name="Ivencloud"></a>
 
 ## Ivencloud
-**Kind**: global class
 
+Nodejs library to connect your devices to Iven Cloud.
+
+## Install
+$ npm install ivencloud
+
+## Usage
+```javascript
+ivencloud.setCredentials(
+    {
+        deviceUid: "your secret key",
+        secretKey: "your device uid"
+    });
+
+ivencloud.sendData(data, function(err, res) {
+    if (err)
+        console.log(err);
+    else
+        console.log(res);
+});
+```
+
+## Documentation
 * [Ivencloud](#Ivencloud)
-    * [new Ivencloud()](#new_Ivencloud_new)
     * _instance_
         * [.setCredentials([creds])](#Ivencloud+setCredentials)
         * [.sendData([options], data, callback)](#Ivencloud+sendData)
@@ -15,11 +35,6 @@
         * [~TasksCallback](#Ivencloud..TasksCallback) : <code>function</code>
         * [~TasksDoneCallback](#Ivencloud..TasksDoneCallback) : <code>function</code>
         * [~callback](#Ivencloud..callback) : <code>function</code>
-
-<a name="new_Ivencloud_new"></a>
-
-### new Ivencloud()
-Ivencloud
 
 <a name="Ivencloud+setCredentials"></a>
 
