@@ -1,6 +1,4 @@
 /**
- * Created by berkozdilek on 15/06/16.
- *
  * ivencloud is a nodejs package for connecting devices to Iven Cloud.
  * Checkout the examples folder to see examples.
  * Further examples and guides can be found in iven blog : http://blog.iven.io
@@ -36,12 +34,12 @@ var Ivencloud = function() {
 };
 
 /**
- * Sets the credentials.
+ * Sets the credentials for authentication.
  * @param {Object} [creds] - The credentials to be set
- * @param {string} [creds.hostname=demo.iven.io] - Hostname of the server to be connect
- * @param {string} [creds.apiKey] - API-KEY of the device
  * @param {string} creds.deviceUid - Device UId of the device
  * @param {string} creds.secretKey - Secret Key of the hardware profile of  the device
+ * @param {string} [creds.apiKey] - API-KEY of the device
+ * @param {string} [creds.hostname=demo.iven.io] - Hostname of the server to be connect
  * @memberof Ivencloud
  */
 Ivencloud.prototype.setCredentials = function(creds) {
@@ -63,11 +61,13 @@ Ivencloud.prototype.setCredentials = function(creds) {
 };
 
 /**
- * Sends data to the cloud.
- * @param {Object} [options] - The credentials to be set
+ * Sends data to the cloud
+ *
+ * @param {Object} [options] - The credentials to be set. If you set credentials with activate of setCredentials method
+ * you dont need to pass anything
  * @param {string} [options.apiKey] - API-KEY of the device
- * @param {Object} data - The object that holds the sensor data to be send
- * @param {Ivencloud~sendDataCallback} callback - Asych. called callback
+ * @param {Object} data - The object which keys must match with HW Profile keys at Iven Cloud
+ * @param {Ivencloud~sendDataCallback} callback - Asych. called after sends happen
  * @memberof Ivencloud
  */
 Ivencloud.prototype.sendData = function(options, data, callback) {
@@ -98,11 +98,13 @@ Ivencloud.prototype.sendData = function(options, data, callback) {
 };
 
 /**
- * Activates the device and sets the api key
- * @param {Object} [options] - The credentials to be set
+ * Activates the device and sets the api key.
+ *
+ * @param {Object} [options] - The credentials to be set. If you set device credentials you dont have to
+ * pass anything to options
  * @param {string} [options.deviceUid] - Device UId of the device
- * @param {string} [options.secretKey] - Secret Key of the hardware profile of  the device
- * @param {Ivencloud~callback} callback - Asych. called callback
+ * @param {string} [options.secretKey] - Secret Key of the hardware profile of the device
+ * @param {Ivencloud~callback} callback - Asych. called after activate happens
  * @memberof Ivencloud
  */
 Ivencloud.prototype.activate = function(options, callback) {
@@ -149,8 +151,8 @@ request(reqOpt, function (error, response, body) {
 };
 
 /**
- * Returns the tasks assigned to device
- * @param {Ivencloud~TasksCallback} callback - Asych. called callback
+ * Gets the tasks assigned to device if any
+ * @param {Ivencloud~TasksCallback} callback - Asych. called after
  * @memberof Ivencloud
  */
 Ivencloud.prototype.getTasks = function(callback) {
@@ -171,17 +173,19 @@ Ivencloud.prototype.getTasks = function(callback) {
   /**
   * Returns the tasks.
   * @callback Ivencloud~TasksCallback
-  * @param {(Object|null)}      err - return error object in case of error, else null.
-  * @param {(Object|undefined)} res - response from the cloud or nothing in case of error.
-  * @param {number} res.tasCode - task code of the task
+  * @param {(Object|null)}      err - return error object in case of error, else null
+  * @param {(Object|undefined)} res - response from the cloud or nothing in case of error
+  * @param {number} res.tasCode - task code of the task, zero if no tasks are assigned
   * @param {string} res.taskValue - value of the task, empty if no value
   */
 };
 
 /**
- * Sets the tasks state to complete. Called this after you do the task
- * @param {number} taskCode - Code of the task completed
- * @param {Ivencloud~TasksDoneCallback} callback - Asych. called callback
+ * Sets the task to completed on Iven Cloud. Call this after you handle the related task
+ * assigned to device
+ *
+ * @param {number} taskCode - Code of the completed task
+ * @param {Ivencloud~TasksDoneCallback} callback - Asych. called after
  * @memberof Ivencloud
  */
 Ivencloud.prototype.taskDone = function(taskCode, callback) {
@@ -200,7 +204,7 @@ Ivencloud.prototype.taskDone = function(taskCode, callback) {
       * @callback Ivencloud~TasksDoneCallback
       * @param {(Object|null)}      err - return error object in case of error, else null.
       * @param {(Object|undefined)} res - response from the cloud or nothing in case of error.
-      * @param {number} res.status - 200 if successful
+      * @param {number} res.status - 200 if successful*
       */
   });
 };
