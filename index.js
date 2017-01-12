@@ -61,13 +61,18 @@ Ivencloud.prototype.setCredentials = function(creds) {
 };
 
 /**
- * Sends data to the cloud
+ * Sends data to the cloud. If the device is not activated it will activates the device.
+ * If the api key expires it will renew the api key
  *
  * @param {Object} [options] - The credentials to be set. If you set credentials with activate of setCredentials method
  * you dont need to pass anything
  * @param {string} [options.apiKey] - API-KEY of the device
+ * @param {string} [options.deviceUid] - Device UId of the device
+ * @param {string} [options.secretKey] - Secret Key of the hardware profile of  the device
+ * @param {string} [options.apiKey] - API-KEY of the device
+ * @param {string} [options.hostname=demo.iven.io] - Hostname of the server to be connect
  * @param {Object} data - The object which keys must match with HW Profile keys at Iven Cloud
- * @param {Ivencloud~sendDataCallback} callback - Asych. called after sends happen
+ * @param {Ivencloud~callback} callback - Asych. called after sends happen
  * @memberof Ivencloud
  */
 Ivencloud.prototype.sendData = function(options, data, callback) {
@@ -134,10 +139,14 @@ Ivencloud.prototype.activate = function(options, callback) {
                 if (ivenCode == 1001 || ivenCode == 1002) {
                     callback(new Error(info.description), info);
                 } else {
+
                     if (info.hasOwnProperty('api_key')){
                         this.apiKey = info.api_key;
                         this.state = State.ACTIVATED;
+                        info.apiKey = info.api_key;
+                        delete info.api_key;
                     }
+
                     callback(null, info);
                 }
             } else { // responseCode > 500 or no json body
@@ -239,7 +248,7 @@ var sendDataRequest = function (host, apiKey, body, renewApikey, task, callback)
                 } else if (ivenCode == 1001) {
                     callback(new Error(ivenCode.description), info);
                 } else {
-                    info.api_key = this.apiKey;
+                    info.apiKey = this.apiKey;
                     callback(null, info);
                 }
             } else { // responseCode > 500 or no json body
@@ -264,7 +273,7 @@ var generateSendDtURL = function (url) {
  * @param {(Object|null)}      err - return error object in case of error, else null.
  * @param {(Object|undefined)} res - response from the cloud or nothing in case of error.
  * @param {number} res.ivenCode - iven code
- * @param {string} res.api_key - api key of the device
+ * @param {string} res.apiKey - api key of the device
  */
 
 module.exports = new Ivencloud();

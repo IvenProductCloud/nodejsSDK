@@ -36,6 +36,7 @@ ivencloud.sendData(data, function(err, res) {
         * [~TasksDoneCallback](#Ivencloud..TasksDoneCallback) : <code>function</code>
         * [~callback](#Ivencloud..callback) : <code>function</code>
 
+
 <a name="Ivencloud+setCredentials"></a>
 
 ### ivencloud.setCredentials([creds])
@@ -54,16 +55,21 @@ Sets the credentials for authentication.
 <a name="Ivencloud+sendData"></a>
 
 ### ivencloud.sendData([options], data, callback)
-Sends data to the cloud
+Sends data to the cloud. If the device is not activated it will activates the device.
+If the api key expires it will renew the api key
 
 **Kind**: instance method of <code>[Ivencloud](#Ivencloud)</code>
 
-| Param | Type | Description |
-| --- | --- | --- |
-| [options] | <code>Object</code> | The credentials to be set. If you set credentials with activate of setCredentials method you dont need to pass anything |
-| [options.apiKey] | <code>string</code> | API-KEY of the device |
-| data | <code>Object</code> | The object which keys must match with HW Profile keys at Iven Cloud |
-| callback | <code>Ivencloud~sendDataCallback</code> | Asych. called after sends happen |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [options] | <code>Object</code> |  | The credentials to be set. If you set credentials with activate of setCredentials method you dont need to pass anything |
+| [options.apiKey] | <code>string</code> |  | API-KEY of the device |
+| [options.deviceUid] | <code>string</code> |  | Device UId of the device |
+| [options.secretKey] | <code>string</code> |  | Secret Key of the hardware profile of  the device |
+| [options.apiKey] | <code>string</code> |  | API-KEY of the device |
+| [options.hostname] | <code>string</code> | <code>&quot;demo.iven.io&quot;</code> | Hostname of the server to be connect |
+| data | <code>Object</code> |  | The object which keys must match with HW Profile keys at Iven Cloud |
+| callback | <code>[callback](#Ivencloud..callback)</code> |  | Asych. called after sends happen |
 
 <a name="Ivencloud+activate"></a>
 
@@ -142,5 +148,5 @@ Callback after an request is made to cloud.
 | err | <code>Object</code> &#124; <code>null</code> | return error object in case of error, else null. |
 | res | <code>Object</code> &#124; <code>undefined</code> | response from the cloud or nothing in case of error. |
 | res.ivenCode | <code>number</code> | iven code |
-| res.api_key | <code>string</code> | api key of the device |
+| res.apiKey | <code>string</code> | api key of the device |
 
