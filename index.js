@@ -21,16 +21,16 @@ const State = {
         }}};
 
 /**
-* Ivencloud
-* @class
-*/
+ * Ivencloud
+ * @class
+ */
 var Ivencloud = function() {
-  this.uid = "";
-  this.secretKey = "";
-  this.activationCode = "";
-  this.state = State.NONE;
-  this.apiKey = "";
-  this.hostname = "demo.iven.io";
+    this.uid = "";
+    this.secretKey = "";
+    this.activationCode = "";
+    this.state = State.NONE;
+    this.apiKey = "";
+    this.hostname = "demo.iven.io";
 };
 
 /**
@@ -44,19 +44,19 @@ var Ivencloud = function() {
  */
 Ivencloud.prototype.setCredentials = function(creds) {
     if (creds.hostname) {
-      this.hostname = creds.hostname;
+        this.hostname = creds.hostname;
     }
     if (creds.apiKey) {
-      this.apiKey = creds.apiKey;
-      this.state = State.ACTIVATED;
+        this.apiKey = creds.apiKey;
+        this.state = State.ACTIVATED;
     } else {
-      if (!creds.deviceUid || !creds.secretKey) {
-        return;
-      }
-      this.uid = creds.deviceUid;
-      this.secretKey = creds.secretKey;
-      this.activationCode = cryptoJS.HmacSHA1(creds.deviceUid, creds.secretKey);
-      this.state = State.INITILIAZED;
+        if (!creds.deviceUid || !creds.secretKey) {
+            return;
+        }
+        this.uid = creds.deviceUid;
+        this.secretKey = creds.secretKey;
+        this.activationCode = cryptoJS.HmacSHA1(creds.deviceUid, creds.secretKey);
+        this.state = State.INITILIAZED;
     }
 };
 
@@ -71,29 +71,29 @@ Ivencloud.prototype.setCredentials = function(creds) {
  * @memberof Ivencloud
  */
 Ivencloud.prototype.sendData = function(options, data, callback) {
-  if (callback == null && typeof data == 'function') {
-    callback = data;
-    data = options;
-    options = null;
-  }
-  var task = 0;
+    if (callback == null && typeof data == 'function') {
+        callback = data;
+        data = options;
+        options = null;
+    }
+    var task = 0;
     if (options) {
-      this.setCredentials(options);
-      if (options.task)
-        task = options.task;
+        this.setCredentials(options);
+        if (options.task)
+            task = options.task;
     }
 
 
     if (this.State != State.ACTIVATED) {
-      this.activate(function(err, res) {
-        if (!err) {
-          sendDataRequest.call(this,this.hostname, this.apiKey, data, true, task, callback);
-        } else {
-          callback(err, res);
-        }
-      }.bind(this));
+        this.activate(function(err, res) {
+            if (!err) {
+                sendDataRequest.call(this,this.hostname, this.apiKey, data, true, task, callback);
+            } else {
+                callback(err, res);
+            }
+        }.bind(this));
     } else {
-    sendDataRequest.call(this,this.hostname, this.apiKey, data, true, task, callback);
+        sendDataRequest.call(this,this.hostname, this.apiKey, data, true, task, callback);
     }
 };
 
@@ -108,45 +108,45 @@ Ivencloud.prototype.sendData = function(options, data, callback) {
  * @memberof Ivencloud
  */
 Ivencloud.prototype.activate = function(options, callback) {
-  if (callback == null && typeof options == 'function') {
-    callback = options;
-    options = null;
-  }
-  if (options) {
-    this.setCredentials(options);
-  } else if (this.state == State.NONE) {
-      return callback(new Error("credentials can't found"));
+    if (callback == null && typeof options == 'function') {
+        callback = options;
+        options = null;
+    }
+    if (options) {
+        this.setCredentials(options);
+    } else if (this.state == State.NONE) {
+        return callback(new Error("credentials can't found"));
     }
 
-var reqOpt= {
-    url: generateActURL(this.hostname),
-    headers: {
-        'Activation': this.activationCode
-    }
-};
-
-request(reqOpt, function (error, response, body) {
-    if (!error) {
-        if (response.statusCode < 500 ||
-            response.headers['content-type'].includes("application/json")) {
-              var info = JSON.parse(body);
-              var ivenCode = info.ivenCode;
-              if (ivenCode == 1001 || ivenCode == 1002) {
-                callback(new Error(info.description), info);
-              } else {
-                if (info.hasOwnProperty('api_key')){
-                  this.apiKey = info.api_key;
-                  this.state = State.ACTIVATED;
-                }
-                callback(null, info);
-              }
-        } else { // responseCode > 500 or no json body
-            callback(new Error('Something gone wrong with the server'));
+    var reqOpt= {
+        url: generateActURL(this.hostname),
+        headers: {
+            'Activation': this.activationCode
         }
-    } else { // error on request
-        return callback(new Error('Error making request: '+ error));
-    }
-}.bind(this));
+    };
+
+    request(reqOpt, function (error, response, body) {
+        if (!error) {
+            if (response.statusCode < 500 ||
+                response.headers['content-type'].includes("application/json")) {
+                var info = JSON.parse(body);
+                var ivenCode = info.ivenCode;
+                if (ivenCode == 1001 || ivenCode == 1002) {
+                    callback(new Error(info.description), info);
+                } else {
+                    if (info.hasOwnProperty('api_key')){
+                        this.apiKey = info.api_key;
+                        this.state = State.ACTIVATED;
+                    }
+                    callback(null, info);
+                }
+            } else { // responseCode > 500 or no json body
+                callback(new Error('Something gone wrong with the server'));
+            }
+        } else { // error on request
+            return callback(new Error('Error making request: '+ error));
+        }
+    }.bind(this));
 
 };
 
@@ -156,28 +156,28 @@ request(reqOpt, function (error, response, body) {
  * @memberof Ivencloud
  */
 Ivencloud.prototype.getTasks = function(callback) {
-  this.sendData({FEED:"T"}, function(err, res) {
-      if (err) {
-        callback(err, res);
-      }
-      else {
-        var ret = {taskCode:0, taskValue:""};
-        if (res.ivenCode >= 2000) {
-          ret.taskCode = res.ivenCode;
-          if (res.hasOwnProperty('task'))
-            ret.taskValue = res.task;
+    this.sendData({FEED:"T"}, function(err, res) {
+        if (err) {
+            callback(err, res);
         }
-        callback(null, ret);
-      }
-  });
-  /**
-  * Returns the tasks.
-  * @callback Ivencloud~TasksCallback
-  * @param {(Object|null)}      err - return error object in case of error, else null
-  * @param {(Object|undefined)} res - response from the cloud or nothing in case of error
-  * @param {number} res.tasCode - task code of the task, zero if no tasks are assigned
-  * @param {string} res.taskValue - value of the task, empty if no value
-  */
+        else {
+            var ret = {taskCode:0, taskValue:""};
+            if (res.ivenCode >= 2000) {
+                ret.taskCode = res.ivenCode;
+                if (res.hasOwnProperty('task'))
+                    ret.taskValue = res.task;
+            }
+            callback(null, ret);
+        }
+    });
+    /**
+     * Returns the tasks.
+     * @callback Ivencloud~TasksCallback
+     * @param {(Object|null)}      err - return error object in case of error, else null
+     * @param {(Object|undefined)} res - response from the cloud or nothing in case of error
+     * @param {number} res.tasCode - task code of the task, zero if no tasks are assigned
+     * @param {string} res.taskValue - value of the task, empty if no value
+     */
 };
 
 /**
@@ -189,82 +189,82 @@ Ivencloud.prototype.getTasks = function(callback) {
  * @memberof Ivencloud
  */
 Ivencloud.prototype.taskDone = function(taskCode, callback) {
-  if (callback == null) {
-    callback = function(){};
-  }
-  this.sendData({task:taskCode}, {FEED:"TD"}, function(err, res) {
-      if (err) {
-        callback(err, res);
-      }
-      else {
-        callback(null,{status:res.status});
-      }
-      /**
-      * Returns the tasks.
-      * @callback Ivencloud~TasksDoneCallback
-      * @param {(Object|null)}      err - return error object in case of error, else null.
-      * @param {(Object|undefined)} res - response from the cloud or nothing in case of error.
-      * @param {number} res.status - 200 if successful*
-      */
-  });
+    if (callback == null) {
+        callback = function(){};
+    }
+    this.sendData({task:taskCode}, {FEED:"TD"}, function(err, res) {
+        if (err) {
+            callback(err, res);
+        }
+        else {
+            callback(null,{status:res.status});
+        }
+        /**
+         * Returns the tasks.
+         * @callback Ivencloud~TasksDoneCallback
+         * @param {(Object|null)}      err - return error object in case of error, else null.
+         * @param {(Object|undefined)} res - response from the cloud or nothing in case of error.
+         * @param {number} res.status - 200 if successful*
+         */
+    });
 };
 
 var sendDataRequest = function (host, apiKey, body, renewApikey, task, callback) {
-  var reqOpt = {
-      method: 'POST',
-      url: generateSendDtURL(host),
-      headers: {
-          'Content-Type' : 'application/json',
-          'API-KEY': apiKey
-      }
-      // ,body: JSON.stringify({data:[body]})
-  };
-  if (task){
-    reqOpt.body = JSON.stringify({data:[body], iven_code:task});
-  } else {
-    reqOpt.body = JSON.stringify({data:[body]});
-  }
-
-
-  request(reqOpt, function (error, response, body) {
-    if (!error) {
-        if (response.statusCode < 500 ||
-            response.headers['content-type'].includes("application/json")) {
-              var info = JSON.parse(body);
-              var ivenCode = info.ivenCode;
-              if (ivenCode == 1004 && renewApikey) {
-                this.activate(function(){
-                  return sendDataRequest.call(this,host, apiKey, body, false, task, cb);
-                });
-              } else if (ivenCode == 1001) {
-                callback(new Error(ivenCode.description), info);
-              } else {
-                info.api_key = this.apiKey;
-                callback(null, info);
-              }
-        } else { // responseCode > 500 or no json body
-            callback(new Error('Something gone wrong with the server'));
+    var reqOpt = {
+        method: 'POST',
+        url: generateSendDtURL(host),
+        headers: {
+            'Content-Type' : 'application/json',
+            'API-KEY': apiKey
         }
-    } else { // error on request
-        return callback(new Error('Error making request: '+ error));
+        // ,body: JSON.stringify({data:[body]})
+    };
+    if (task){
+        reqOpt.body = JSON.stringify({data:[body], iven_code:task});
+    } else {
+        reqOpt.body = JSON.stringify({data:[body]});
     }
-  }.bind(this));
+
+
+    request(reqOpt, function (error, response, body) {
+        if (!error) {
+            if (response.statusCode < 500 ||
+                response.headers['content-type'].includes("application/json")) {
+                var info = JSON.parse(body);
+                var ivenCode = info.ivenCode;
+                if (ivenCode == 1004 && renewApikey) {
+                    this.activate(function(){
+                        return sendDataRequest.call(this,host, apiKey, body, false, task, cb);
+                    });
+                } else if (ivenCode == 1001) {
+                    callback(new Error(ivenCode.description), info);
+                } else {
+                    info.api_key = this.apiKey;
+                    callback(null, info);
+                }
+            } else { // responseCode > 500 or no json body
+                callback(new Error('Something gone wrong with the server'));
+            }
+        } else { // error on request
+            return callback(new Error('Error making request: '+ error));
+        }
+    }.bind(this));
 };
 
 var generateActURL = function (url) {
-  return "http://"+ url +"/activate/device";
+    return "http://"+ url +"/activate/device";
 };
 var generateSendDtURL = function (url) {
-  return "http://"+ url +"/data";
+    return "http://"+ url +"/data";
 };
 
 /**
-* Callback after an request is made to cloud.
-* @callback Ivencloud~callback
-* @param {(Object|null)}      err - return error object in case of error, else null.
-* @param {(Object|undefined)} res - response from the cloud or nothing in case of error.
-* @param {number} res.ivenCode - iven code
-* @param {string} res.api_key - api key of the device
-*/
+ * Callback after an request is made to cloud.
+ * @callback Ivencloud~callback
+ * @param {(Object|null)}      err - return error object in case of error, else null.
+ * @param {(Object|undefined)} res - response from the cloud or nothing in case of error.
+ * @param {number} res.ivenCode - iven code
+ * @param {string} res.api_key - api key of the device
+ */
 
 module.exports = new Ivencloud();
