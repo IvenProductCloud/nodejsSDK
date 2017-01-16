@@ -280,6 +280,53 @@ var sendDataRequest = function (host, apiKey, body, renewApikey, task, callback)
     }.bind(this));
 };
 
+Ivencloud.prototype.api = function(options, callback) {
+    if (callback == null && typeof options == 'function') {
+        callback = options;
+        options = null;
+    }
+    if (options) {
+        this.setCredentials(options);
+    } else if (this.state == State.NONE) {
+        return callback(new Error("credentials can't found"));
+    }
+
+    var reqOpt= {
+        url: generateActURL(this.hostname),
+        headers: {
+            'Activation': this.activationCode
+        }
+    };
+
+    request(reqOpt, function (error, response, body) {
+        if (!error) {
+            if (response.statusCode < 500 ||
+                response.headers['content-type'].includes("application/json")) {
+                var info = JSON.parse(body);
+                var ivenCode = info.ivenCode;
+                if (ivenCode == 1001 || ivenCode == 1002) {
+                    callback(new Error(info.description), info);
+                } else {
+
+                    if (info.hasOwnProperty('api_key')){
+                        this.apiKey = info.api_key;
+                        this.state = State.ACTIVATED;
+                        info.apiKey = info.api_key;
+                        delete info.api_key;
+                    }
+
+                    callback(null, info);
+                }
+            } else { // responseCode > 500 or no json body
+                callback(new Error('Something gone wrong with the server'));
+            }
+        } else { // error on request
+            return callback(new Error('Error making request: '+ error));
+        }
+    }.bind(this));
+
+};
+
 var generateActURL = function (url) {
     return "http://"+ url +"/activate/device";
 };
