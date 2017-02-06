@@ -1,6 +1,6 @@
 {
   "name": "ivencloud",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "connect your device to iven cloud",
   "main": "index.js",
   "scripts": {
