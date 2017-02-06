@@ -120,7 +120,7 @@ Ivencloud.prototype.activate = function(options, callback) {
     if (options) {
         this.setCredentials(options);
     } else if (this.state == State.NONE) {
-        return callback(new Error("credentials can't found"));
+        return callback(new Error("Credentials can't found"));
     }
 
     var reqOpt= {
@@ -263,10 +263,10 @@ var sendDataRequest = function (host, apiKey, body, renewApikey, task, callback)
                 var ivenCode = info.ivenCode;
                 if (ivenCode == 1004 && renewApikey) {
                     this.activate(function(){
-                        return sendDataRequest.call(this,host, apiKey, body, false, task, cb);
+                        return sendDataRequest.call(host, apiKey, body, false, task, cb);
                     });
                 } else if (ivenCode == 1001) {
-                    callback(new Error(ivenCode.description), info);
+                    callback(new Error(info.description), info);
                 } else {
                     info.apiKey = this.apiKey;
                     callback(null, info);
@@ -288,7 +288,7 @@ Ivencloud.prototype.api = function(options, callback) {
     if (options) {
         this.setCredentials(options);
     } else if (this.state == State.NONE) {
-        return callback(new Error("credentials can't found"));
+        return callback(new Error("Credentials can't found"));
     }
 
     var reqOpt= {
