@@ -44,6 +44,9 @@ var Ivencloud = function() {
  * @memberof Ivencloud
  */
 Ivencloud.prototype.setCredentials = function(creds) {
+    if (!creds)
+        return false;
+
     if (creds.hostname) {
         this.hostname = generateBaseURL(creds.hostname);
     }
@@ -52,13 +55,15 @@ Ivencloud.prototype.setCredentials = function(creds) {
         this.state = State.ACTIVATED;
     } else {
         if (!creds.deviceUid || !creds.secretKey) {
-            return;
+            return false;
         }
         this.uid = creds.deviceUid;
         this.secretKey = creds.secretKey;
         this.activationCode = cryptoJS.HmacSHA1(creds.deviceUid, creds.secretKey);
         this.state = State.INITILIAZED;
     }
+
+    return true;
 };
 
 /**
