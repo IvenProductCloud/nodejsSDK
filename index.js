@@ -6,8 +6,9 @@
  */
 
 // third party dependencies
-var request = require('request');
+var axios = require("axios");
 var cryptoJS = require("crypto-js");
+
 
 const State = {
     NONE:         0,
@@ -30,7 +31,7 @@ var Ivencloud = function() {
     this.activationCode = "";
     this.state = State.NONE;
     this.apiKey = "";
-    this.hostname = "demo.iven.io";
+    this.hostname = generateBaseURL("demo.iven.io");
 };
 
 /**
@@ -44,7 +45,7 @@ var Ivencloud = function() {
  */
 Ivencloud.prototype.setCredentials = function(creds) {
     if (creds.hostname) {
-        this.hostname = creds.hostname;
+        this.hostname = generateBaseURL(creds.hostname);
     }
     if (creds.apiKey) {
         this.apiKey = creds.apiKey;
@@ -89,16 +90,16 @@ Ivencloud.prototype.sendData = function(options, data, callback) {
     }
 
 
-    if (this.State != State.ACTIVATED) {
+    if (this.state != State.ACTIVATED) {
         this.activate(function(err, res) {
             if (!err) {
-                sendDataRequest.call(this,this.hostname, this.apiKey, data, true, task, callback);
+                sendDataRequest.call(this, this.hostname, this.apiKey, data, true, task, callback);
             } else {
                 callback(err, res);
             }
         }.bind(this));
     } else {
-        sendDataRequest.call(this,this.hostname, this.apiKey, data, true, task, callback);
+        sendDataRequest.call(this, this.hostname, this.apiKey, data, true, task, callback);
     }
 };
 
@@ -123,40 +124,29 @@ Ivencloud.prototype.activate = function(options, callback) {
         return callback(new Error("Credentials can't found"));
     }
 
-    var reqOpt= {
-        url: generateActURL(this.hostname),
+
+    axios.get(activationPath, {
+        baseURL: this.hostname,
         headers: {
             'Activation': this.activationCode
         }
-    };
+    })
+        .then(function (response) {
+            this.apiKey = response.data.api_key;
+            this.state = State.ACTIVATED;
+            response.data.apiKey = response.data.api_key;
+            delete response.data.api_key;
 
-    request(reqOpt, function (error, response, body) {
-        if (!error) {
-            if (response.statusCode < 500 ||
-                response.headers['content-type'].includes("application/json")) {
-                var info = JSON.parse(body);
-                var ivenCode = info.ivenCode;
-                if (ivenCode == 1001 || ivenCode == 1002) {
-                    callback(new Error(info.description), info);
-                } else {
-
-                    if (info.hasOwnProperty('api_key')){
-                        this.apiKey = info.api_key;
-                        this.state = State.ACTIVATED;
-                        info.apiKey = info.api_key;
-                        delete info.api_key;
-                    }
-
-                    callback(null, info);
-                }
-            } else { // responseCode > 500 or no json body
-                callback(new Error('Something gone wrong with the server'));
+            callback(null, response.data);
+        }.bind(this))
+        .catch(function (error) {
+            var ivenCode = error.response.data.ivenCode;
+            if (error.response.status < 500) {
+                callback(new Error(error.response.data.description), error.response.data);
+            } else {
+                callback(new Error("HTTP Status 500"), null);
             }
-        } else { // error on request
-            return callback(new Error('Error making request: '+ error));
-        }
-    }.bind(this));
-
+        });
 };
 
 /**
@@ -174,6 +164,7 @@ Ivencloud.prototype.getTasks = function(options, callback) {
     if (options)
         this.setCredentials(options);
 
+
         this.sendData({FEED:"T"}, function(err, res) {
         if (err) {
             callback(err, res);
@@ -185,6 +176,7 @@ Ivencloud.prototype.getTasks = function(options, callback) {
                 if (res.hasOwnProperty('task'))
                     ret.taskValue = res.task;
             }
+
             callback(null, ret);
         }
     });
@@ -221,6 +213,7 @@ Ivencloud.prototype.taskDone = function(options, taskCode, callback) {
     if (options)
         this.setCredentials(options);
 
+
     this.sendData({task:taskCode}, {FEED:"TD"}, function(err, res) {
         if (err) {
             callback(err, res);
@@ -239,99 +232,50 @@ Ivencloud.prototype.taskDone = function(options, taskCode, callback) {
 };
 
 var sendDataRequest = function (host, apiKey, body, renewApikey, task, callback) {
-    var reqOpt = {
-        method: 'POST',
-        url: generateSendDtURL(host),
+
+    var reqbody = { data:[body] };
+    if (task)
+        reqbody.iven_code = task ;
+
+    axios.post(dataPath, reqbody, {
+        baseURL: this.hostname,
         headers: {
-            'Content-Type' : 'application/json',
-            'API-KEY': apiKey
+            'API-KEY': this.apiKey
         }
-        // ,body: JSON.stringify({data:[body]})
-    };
-    if (task){
-        reqOpt.body = JSON.stringify({data:[body], iven_code:task});
-    } else {
-        reqOpt.body = JSON.stringify({data:[body]});
-    }
-
-
-    request(reqOpt, function (error, response, body) {
-        if (!error) {
-            if (response.statusCode < 500 ||
-                response.headers['content-type'].includes("application/json")) {
-                var info = JSON.parse(body);
-                var ivenCode = info.ivenCode;
+    })
+        .then(function (response) {
+            response.data.apiKey = this.apiKey;
+            if (response.data.hasOwnProperty('message') && !response.data.hasOwnProperty('description')) {
+                response.data.description = response.data.message;
+                delete response.data.message;
+            }
+            callback(null, response.data);
+        }.bind(this))
+        .catch(function (error) {
+            if (error.response.status < 500) {
+                var ivenCode = error.response.data.ivenCode;
                 if (ivenCode == 1004 && renewApikey) {
-                    this.activate(function(){
-                        return sendDataRequest.call(host, apiKey, body, false, task, cb);
-                    });
-                } else if (ivenCode == 1001) {
-                    callback(new Error(info.description), info);
+                    this.activate(function(err, res) {
+                        if (!err)
+                            sendDataRequest.call(this, host, apiKey, body, false, task, callback);
+                        else
+                            callback(err,res);
+                    }.bind(this));
                 } else {
-                    info.apiKey = this.apiKey;
-                    callback(null, info);
+                    callback(new Error(error.response.data.description), error.response.data);
                 }
-            } else { // responseCode > 500 or no json body
-                callback(new Error('Something gone wrong with the server'));
+            } else {
+                callback(new Error("HTTP Status 500"), null);
             }
-        } else { // error on request
-            return callback(new Error('Error making request: '+ error));
-        }
-    }.bind(this));
+        });
 };
 
-Ivencloud.prototype.api = function(options, callback) {
-    if (callback == null && typeof options == 'function') {
-        callback = options;
-        options = null;
-    }
-    if (options) {
-        this.setCredentials(options);
-    } else if (this.state == State.NONE) {
-        return callback(new Error("Credentials can't found"));
-    }
+Ivencloud.prototype.api = Ivencloud.prototype.activate;
 
-    var reqOpt= {
-        url: generateActURL(this.hostname),
-        headers: {
-            'Activation': this.activationCode
-        }
-    };
-
-    request(reqOpt, function (error, response, body) {
-        if (!error) {
-            if (response.statusCode < 500 ||
-                response.headers['content-type'].includes("application/json")) {
-                var info = JSON.parse(body);
-                var ivenCode = info.ivenCode;
-                if (ivenCode == 1001 || ivenCode == 1002) {
-                    callback(new Error(info.description), info);
-                } else {
-
-                    if (info.hasOwnProperty('api_key')){
-                        this.apiKey = info.api_key;
-                        this.state = State.ACTIVATED;
-                        info.apiKey = info.api_key;
-                        delete info.api_key;
-                    }
-
-                    callback(null, info);
-                }
-            } else { // responseCode > 500 or no json body
-                callback(new Error('Something gone wrong with the server'));
-            }
-        } else { // error on request
-            return callback(new Error('Error making request: '+ error));
-        }
-    }.bind(this));
-
-};
-
-var generateActURL = function (url) {
-    return "http://"+ url +"/activate/device";
-};
-var generateSendDtURL = function (url) {
-    return "http://"+ url +"/data";
+var activationPath = "/activate/device";
+var dataPath = "/data";
+var generateBaseURL = function (url) {
+    return "http://"+ url;
 };
 
 /**
