@@ -11,8 +11,8 @@ $ npm install ivencloud
 ```javascript
 ivencloud.setCredentials(
     {
-        deviceUid: "your secret key",
-        secretKey: "your device uid"
+        deviceUid: "your device uid",
+        secretKey: "your secret key"
     });
 
 ivencloud.sendData(data, function(err, res) {
