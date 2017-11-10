@@ -31,7 +31,7 @@ var Ivencloud = function() {
     this.activationCode = "";
     this.state = State.NONE;
     this.apiKey = "";
-    this.hostname = generateBaseURL("demo.iven.io");
+    this.hostname = generateBaseURL("staging.iven.io");
 };
 
 /**
